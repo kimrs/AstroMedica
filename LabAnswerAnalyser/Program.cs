@@ -34,16 +34,12 @@ var patient = patientResult switch
 };
 
 var labAnswer = labAnswerService.ByPatientId(patient.Id)
-    .First(x => x.ExaminationType == ExaminationType.Glucose);
-
-if (labAnswer.GlucoseLevel is null)
-{
-    return;
-}
+    .OfType<GlucoseLabAnswer>()
+    .First();
 
 var shouldNotifyPatient = patient is IHasZodiacSign hasZodiacSign
-    ? labAnswer.GlucoseLevel > glucoseTolerance[hasZodiacSign.ZodiacSign]
-    : labAnswer.GlucoseLevel > defaultGlucoseTolerance;
+    ? labAnswer > glucoseTolerance[hasZodiacSign.ZodiacSign]
+    : labAnswer > defaultGlucoseTolerance;
 
 if (!shouldNotifyPatient)
 {
@@ -60,8 +56,3 @@ if (patient.MailAddress is MailAddress mailAddress)
 {
     mailService.TellPatientToEatLessSugar(mailAddress, labAnswer);
 }
-
-
-
-
-

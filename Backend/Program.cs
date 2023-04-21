@@ -1,4 +1,3 @@
-using System.Net.Http;
 using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);

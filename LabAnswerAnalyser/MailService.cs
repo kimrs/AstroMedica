@@ -6,8 +6,8 @@ namespace LabAnswerAnalyser;
 
 public class MailService
 {
-    public void TellPatientToEatLessSugar(MailAddress mailAddress, LabAnswer labAnswer)
+    public void TellPatientToEatLessSugar(MailAddress mailAddress, ILabAnswer labAnswer)
     {
-        Console.Out.WriteLine($"Mail was sent to {mailAddress} to notify about {labAnswer.ExaminationType}");
+        Console.Out.WriteLine($"Mail was sent to {mailAddress} to notify about {labAnswer}");
     }
 }

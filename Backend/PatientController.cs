@@ -19,19 +19,16 @@ public class PatientController
 
     [HttpGet]
     [Route("{id}")]
-    public IOption Read(Id id)
+    public IOption Read(int id)
     {
         if (!InitializationTask.IsCompleted)
         {
-            var none = new None(ReasonForNone.ServiceNotYetInitialized);
-            return none;
+            return new None(ReasonForNone.ServiceNotYetInitialized);
         }
 
-        IOption result = _patients.TryGetValue(id, out var patient)
+        return _patients.TryGetValue(new Id(id), out var patient)
             ? new Some<IPatient>(patient)
             : new None(ReasonForNone.PatientDoesNotExist);
-
-        return result;
     }
 
     [HttpPost]

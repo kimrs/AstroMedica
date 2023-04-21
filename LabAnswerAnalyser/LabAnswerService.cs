@@ -1,17 +1,16 @@
-﻿using Transport;
-using Transport.Lab;
+﻿using Transport.Lab;
 using Transport.Patient;
 
 namespace LabAnswerAnalyser;
 
 public class LabAnswerService
 {
-    public IEnumerable<LabAnswer> ByPatientId(Id patientId)
+    public IEnumerable<ILabAnswer> ByPatientId(Id _)
     {
-        return new List<LabAnswer>
+        return new List<ILabAnswer>
         {
-            new LabAnswer(ExaminationType.Glucose, null, new GlucoseLevel(50)),
-            new LabAnswer(ExaminationType.Covid19, BinaryLabAnswer.Positive, null)
+            new GlucoseLabAnswer(new GlucoseLevel(50)),
+            new Covid19LabAnswer(BinaryLabAnswer.Negative)
         };
     }
 }
