@@ -3,7 +3,7 @@
 public interface IPatient
 {
     Id Id { get; }
-    string Name { get; }
+    Name Name { get; }
     IPhoneNumber PhoneNumber { get; }
     IMailAddress MailAddress { get; }
 }
@@ -27,7 +27,7 @@ public interface IHasZodiacSign
 
 public record Patient(
     Id Id,
-    string Name,
+    Name Name,
     ZodiacSign ZodiacSign,
     IPhoneNumber PhoneNumber,
     IMailAddress MailAddress
@@ -35,7 +35,7 @@ public record Patient(
 
 public record LegacyPatient(
     Id Id,
-    string Name,
+    Name Name,
     IPhoneNumber PhoneNumber,
     IMailAddress MailAddress
 ) : IPatient;
