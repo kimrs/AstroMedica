@@ -1,28 +1,58 @@
-﻿using Newtonsoft.Json;
+﻿using System.Net.Http.Json;
+using System.Text;
+using Newtonsoft.Json;
 using Transport;
 using Transport.Patient;
 
 namespace LabAnswerAnalyser;
 
-public class PatientService
+public interface IPatientService
 {
-    private static readonly HttpClient _httpClient = new ()
-    {
-        BaseAddress = new Uri("http://localhost:5098/"),
-    };
+    Task<IOption<IPatient>> Get(Id id);
+    Task Create(Patient patient);
+}
 
-    public async Task<IOption> Get(Id id)
+public class PatientService : IPatientService
+{
+    private readonly HttpClient _httpClient;
+    private readonly JsonSerializerSettings _settings = new() {TypeNameHandling = TypeNameHandling.All};
+
+    public PatientService(HttpClient httpClient)
     {
-        var op = new JsonSerializerSettings() {TypeNameHandling = TypeNameHandling.All};
+        _httpClient = httpClient;
+    }
+
+    public async Task<IOption<IPatient>> Get(Id id)
+    {
+        HttpResponseMessage result;
         try
         {
-            var result = await _httpClient.GetAsync($"patient/{id.Value}");
-            var jsonResponse = await result.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<IOption>(jsonResponse, op);
+            result = await _httpClient.GetAsync($"patient/{id.Value}");
         }
         catch (HttpRequestException)
         {
-            return new None(ReasonForNone.ServiceUnavailable);
+            return new None<IPatient>(ReasonForNone.ServiceUnavailable);
         }
+        var jsonResponse = await result.Content.ReadAsStringAsync();
+
+        try
+        {
+            return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings)
+                   ?? new None<IPatient>(ReasonForNone.FailedToDeserialize);
+        }
+        catch (JsonReaderException)
+        {
+            return new None<IPatient>(ReasonForNone.FailedToDeserialize);
+        }
+    }
+
+    public async Task Create(Patient patient)
+    {
+        // await Task.Delay(TimeSpan.FromSeconds(3));
+        var settings = new JsonSerializerSettings();
+        settings.TypeNameHandling = TypeNameHandling.All;
+        var json = JsonConvert.SerializeObject(patient, settings);
+        var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
+        await _httpClient.PostAsync("patient", httpContent);
     }
 }

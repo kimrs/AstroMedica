@@ -1,16 +1,48 @@
-﻿using Transport.Lab;
+﻿using Newtonsoft.Json;
+using Transport;
+using Transport.Lab;
 using Transport.Patient;
 
 namespace LabAnswerAnalyser;
 
-public class LabAnswerService
+public interface ILabAnswerService
 {
-    public IEnumerable<ILabAnswer> ByPatientId(Id _)
+    Task<IOption<IEnumerable<ILabAnswer>>> ByPatientId(Id id);
+    Task<IEnumerable<ILabAnswer>> ByPatientThrowIfNone(Id id);
+}
+
+public class LabAnswerService : ILabAnswerService
+{
+    private readonly HttpClient _httpClient;
+
+    public LabAnswerService(HttpClient httpClient)
     {
-        return new List<ILabAnswer>
+        _httpClient = httpClient;
+    }
+
+    public async Task<IOption<IEnumerable<ILabAnswer>>> ByPatientId(Id id)
+    {
+        HttpResponseMessage result;
+        try
         {
-            new GlucoseLabAnswer(new GlucoseLevel(50)),
-            new Covid19LabAnswer(BinaryLabAnswer.Negative)
-        };
+            result = await _httpClient.GetAsync($"labanswer/{id.Value}");
+        }
+        catch (HttpRequestException )
+        {
+            return new None<IEnumerable<ILabAnswer>>(ReasonForNone.ServiceUnavailable);
+        }
+        
+        var jsonResponse = await result.Content.ReadAsStringAsync();
+        var settings = new JsonSerializerSettings();
+        settings.TypeNameHandling = TypeNameHandling.All;
+        
+        return JsonConvert.DeserializeObject<IOption<IEnumerable<ILabAnswer>>>(jsonResponse, settings)
+            ?? new None<IEnumerable<ILabAnswer>>(ReasonForNone.FailedToDeserialize);
+    }
+
+    public async Task<IEnumerable<ILabAnswer>> ByPatientThrowIfNone(Id id)
+    {
+        var result = await ByPatientId(id);
+        return result.EnsureHasValue();
     }
 }

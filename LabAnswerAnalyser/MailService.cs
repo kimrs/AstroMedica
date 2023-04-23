@@ -1,13 +1,26 @@
-﻿using Transport;
+﻿using Microsoft.Extensions.Logging;
 using Transport.Lab;
 using Transport.Patient;
 
 namespace LabAnswerAnalyser;
 
-public class MailService
+public interface IMailService
 {
+    void TellPatientToEatLessSugar(MailAddress mailAddress, ILabAnswer labAnswer);
+}
+
+public class MailService : IMailService
+{
+    private readonly ILogger<MailService> _logger;
+    public MailService(
+        ILogger<MailService> logger
+        )
+    {
+        _logger = logger;
+    }
+    
     public void TellPatientToEatLessSugar(MailAddress mailAddress, ILabAnswer labAnswer)
     {
-        Console.Out.WriteLine($"Mail was sent to {mailAddress} to notify about {labAnswer}");
+        _logger.LogInformation($"Letter was sent to {mailAddress} to inform about {labAnswer}");
     }
 }

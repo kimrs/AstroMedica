@@ -1,12 +1,26 @@
-﻿using Transport.Lab;
+﻿using Microsoft.Extensions.Logging;
+using Transport.Lab;
 using Transport.Patient;
 
 namespace LabAnswerAnalyser;
 
-public class SmsService
+public interface ISmsService
 {
+    void TellPatientToEatLessSugar(PhoneNumber phoneNumber, ILabAnswer labAnswer);
+}
+
+public class SmsService : ISmsService
+{
+    private readonly ILogger<SmsService> _logger;
+    public SmsService(
+        ILogger<SmsService> logger
+    )
+    {
+        _logger = logger;
+    }
+    
     public void TellPatientToEatLessSugar(PhoneNumber phoneNumber, ILabAnswer labAnswer)
     {
-        Console.Out.WriteLine($"Sms was sent to {phoneNumber} to notify about {labAnswer}");
+        _logger.LogInformation(($"Sms was sent to {phoneNumber} to inform about {labAnswer}"));
     }
 }

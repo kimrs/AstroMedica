@@ -1,11 +1,36 @@
 ﻿namespace Transport;
 
-public interface IOption
+public interface IOption<out T>
 {
+    T EnsureHasValue();
 }
 
-public record Some<T>(T Value) : IOption;
+public record Some<T>(T Value) : IOption<T>
+{
+    public T EnsureHasValue()
+    {
+        if (Value is null)
+        {
+            throw new NullReferenceException(nameof(Value));
+        }
 
-public record None(ReasonForNone Because) : IOption;
+        return Value;
+    }
+}
 
-public enum ReasonForNone { ServiceUnavailable, ServiceNotYetInitialized, PatientDoesNotExist}
+public record None<T>(ReasonForNone Because) : IOption<T>
+{
+    public T EnsureHasValue()
+    {
+        var message = Because switch
+        {
+            ReasonForNone.ServiceUnavailable => "Service unavailable, message placed on the error queue",
+            ReasonForNone.ServiceNotYetInitialized => "Service is still initializing. Retrying in a couple of minutes",
+            ReasonForNone.ItemDoesNotExist => "Item does not exist",
+            _ => "An error occured"
+        };
+        throw new Exception(message);
+    }
+}
+
+public enum ReasonForNone { ServiceUnavailable, ServiceNotYetInitialized, ItemDoesNotExist, FailedToDeserialize}

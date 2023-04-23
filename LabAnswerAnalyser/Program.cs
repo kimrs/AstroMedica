@@ -1,58 +1,58 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Transport;
 using LabAnswerAnalyser;
-using Transport.Lab;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Transport;
 using Transport.Patient;
 
-var patientService = new PatientService();
-var labAnswerService = new LabAnswerService();
-var mailService = new MailService();
-var smsService = new SmsService();
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(AppContext.BaseDirectory)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .Build();
 
-var glucoseTolerance = new Dictionary<ZodiacSign, GlucoseLevel>()
+var services = new ServiceCollection();
+services.AddLogging(c =>
 {
-    { ZodiacSign.Aries,  new GlucoseLevel(30) },
-    { ZodiacSign.Gemini, new GlucoseLevel(40) },
-    { ZodiacSign.Taurus, new GlucoseLevel(50) }
-};
-var defaultGlucoseTolerance = new GlucoseLevel(30);
+    c.AddConsole();
+    c.SetMinimumLevel(LogLevel.Information);
+});
+services.Configure<GlucoseTolerance>(configuration.GetSection("GlucoseTolerance"));
+services.AddSingleton(s => s.GetRequiredService<IOptions<GlucoseTolerance>>().Value);
 
-var patientId = new Id(2);
-var patientResult = await patientService.Get(patientId);
-
-var patient = patientResult switch
+var backendUrl = configuration.GetSection("BackendUrl").Value;
+if (backendUrl == null)
 {
-    Some<IPatient> s => s.Value,
-    None {Because: ReasonForNone.ServiceUnavailable} => throw new Exception(
-        "Service unavailable, message placed on the error queue"),
-    None {Because: ReasonForNone.ServiceNotYetInitialized} => throw new Exception(
-        "Service is still initializing. Retrying in a couple of minutes"),
-    None {Because: ReasonForNone.PatientDoesNotExist} => throw new Exception(
-        $"Patient with id {patientId} does not exist"),
-    _ => throw new Exception($"An error occured"),
-};
-
-var labAnswer = labAnswerService.ByPatientId(patient.Id)
-    .OfType<GlucoseLabAnswer>()
-    .First();
-
-var shouldNotifyPatient = patient is IHasZodiacSign hasZodiacSign
-    ? labAnswer > glucoseTolerance[hasZodiacSign.ZodiacSign]
-    : labAnswer > defaultGlucoseTolerance;
-
-if (!shouldNotifyPatient)
-{
-    return;
+    throw new ArgumentNullException(nameof(backendUrl));
 }
 
-if (patient.PhoneNumber is PhoneNumber phoneNumber)
+services.AddHttpClient(string.Empty, c =>
 {
-    smsService.TellPatientToEatLessSugar(phoneNumber, labAnswer);
-    return;
-}
-
-if (patient.MailAddress is MailAddress mailAddress)
+    c.BaseAddress = new Uri(backendUrl);
+});
+services.AddSingleton<IPatientService, PatientService>();
+services.AddSingleton<ILabAnswerService, LabAnswerService>();
+services.AddSingleton<IMailService, MailService>();
+services.AddSingleton<ISmsService, SmsService>();
+services.AddSingleton<IGlucoseAnalyzer, GlucoseAnalyser>();
+    
+var serviceProvider = services.BuildServiceProvider();
+using var scope = serviceProvider.CreateScope();
+var patientService = scope.ServiceProvider.GetRequiredService<IPatientService>();
+if (GlucoseAnalyser.PatientId == 3)
 {
-    mailService.TellPatientToEatLessSugar(mailAddress, labAnswer);
+    patientService.Create(
+        new Patient(
+            new Id(3),
+            new Name("Grace Hopper"),
+            ZodiacSign.Taurus,
+            new PhoneNumberNotSet(),
+            new MailAddress("Flåklypa")
+        ));
 }
+var glucoseAnalyzer = scope.ServiceProvider.GetRequiredService<IGlucoseAnalyzer>();
+    
+var patientId = new Id(GlucoseAnalyser.PatientId);
+await glucoseAnalyzer.HandleGlucoseAnalyzedForPatient(patientId);
