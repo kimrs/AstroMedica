@@ -48,7 +48,7 @@ if (GlucoseAnalyser.PatientId == 3)
             new Id(3),
             new Name("Grace Hopper"),
             ZodiacSign.Taurus,
-            new PhoneNumberNotSet(),
+            null,
             new MailAddress("Flåklypa")
         ));
 }

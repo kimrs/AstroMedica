@@ -6,7 +6,7 @@ namespace LabAnswerAnalyser;
 
 public interface ISmsService
 {
-    void TellPatientToEatLessSugar(PhoneNumber phoneNumber, ILabAnswer labAnswer);
+    void TellPatientToEatLessSugar(PhoneNumber phoneNumber, LabAnswer labAnswer);
 }
 
 public class SmsService : ISmsService
@@ -19,7 +19,7 @@ public class SmsService : ISmsService
         _logger = logger;
     }
     
-    public void TellPatientToEatLessSugar(PhoneNumber phoneNumber, ILabAnswer labAnswer)
+    public void TellPatientToEatLessSugar(PhoneNumber phoneNumber, LabAnswer labAnswer)
     {
         _logger.LogInformation(($"Sms was sent to {phoneNumber} to inform about {labAnswer}"));
     }

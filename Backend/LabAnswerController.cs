@@ -9,21 +9,21 @@ namespace Backend;
 [Route("[controller]")]
 public class LabAnswerController
 {
-    private static readonly Dictionary<Id, List<ILabAnswer>> LabAnswers = new()
+    private static readonly Dictionary<Id, List<LabAnswer>> LabAnswers = new()
     {
-        {new Id(0), new List<ILabAnswer>() {new GlucoseLabAnswer(new GlucoseLevel(60))}},
-        {new Id(1), new List<ILabAnswer>() {
-            new GlucoseLabAnswer(new GlucoseLevel(50)), 
-            new Covid19LabAnswer(BinaryLabAnswer.Positive)}},
-        {new Id(2), new List<ILabAnswer>() {new GlucoseLabAnswer(new GlucoseLevel(50))}},
-        {new Id(3), new List<ILabAnswer>() {new GlucoseLabAnswer(new GlucoseLevel(50))}},
+        {new Id(0), new List<LabAnswer>() {new LabAnswer(new GlucoseLevel(60), null, ExaminationType.Glucose)}},
+        {new Id(1), new List<LabAnswer>() {
+            new LabAnswer(new GlucoseLevel(50), null, ExaminationType.Glucose),
+            new LabAnswer(null, BinaryLabAnswer.Positive, ExaminationType.Covid19)}},
+        {new Id(2), new List<LabAnswer>() {new LabAnswer(new GlucoseLevel(50), null, ExaminationType.Glucose)}},
+        {new Id(3), new List<LabAnswer>() {new LabAnswer(new GlucoseLevel(50), null, ExaminationType.Glucose)}},
     };
 
     [HttpGet("{idValue}")]
-    public IOption<IEnumerable<ILabAnswer>> Read(int idValue)
+    public IEnumerable<LabAnswer> Read(int idValue)
     {
         return LabAnswers.TryGetValue(new Id(idValue), out var labAnswers)
-            ? new Some<IEnumerable<ILabAnswer>>(labAnswers)
-            : new None<IEnumerable<ILabAnswer>>(ReasonForNone.ItemDoesNotExist);
+            ? labAnswers
+            : null;
     }
 }

@@ -8,11 +8,11 @@ namespace Backend;
 [Route("[controller]")]
 public class PatientController
 {
-    private static readonly Dictionary<Id, IPatient> Patients = new List<IPatient>()
+    private static readonly Dictionary<Id, Patient> Patients = new List<Patient>()
     {
-        new Patient(new Id(0), new Name("Tony Hoare"), ZodiacSign.Aries, new PhoneNumber("815 493 00"), new MailAddressNotSet()),
-        new Patient(new Id(1), new Name("Ada Lovelace"), ZodiacSign.Gemini, new PhoneNumberNotSet(), new MailAddressNotSet()),
-        new LegacyPatient(new Id(2), new Name("Brian Kernighan"), new PhoneNumberNotSet(), new MailAddress("Portveien 2")),
+        new Patient(new Id(0), new Name("Tony Hoare"), ZodiacSign.Aries, new PhoneNumber("815 493 00"), null),
+        new Patient(new Id(1), new Name("Ada Lovelace"), ZodiacSign.Gemini, null, null),
+        new Patient(new Id(2), new Name("Brian Kernighan"), null, null, new MailAddress("Portveien 2")),
     }.ToDictionary(x => x.Id);
 
     private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
@@ -24,16 +24,16 @@ public class PatientController
     }
 
     [HttpGet("{idValue}")]
-    public IOption<IPatient> Read(int idValue)
+    public Patient Read(int idValue)
     {
         if (!InitializationTask.IsCompleted)
         {
-            return new None<IPatient>(ReasonForNone.ServiceNotYetInitialized);
+            return null;
         }
-        
+
         return Patients.TryGetValue(new Id(idValue), out var patient)
-            ? new Some<IPatient>(patient)
-            : new None<IPatient>(ReasonForNone.ItemDoesNotExist);
+            ? patient
+            : null;
     }
 
     [HttpPost]

@@ -41,42 +41,45 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
     private const int PatientWithCovid = 1;
     private const int LegacyPatient = 2;
     private const int LazyInitializedPatient = 3;
-    public const int PatientId = LazyInitializedPatient;
+    public const int PatientId = PatientWithPhoneNumber;
     /* For debugging purposes */
     
     public async Task HandleGlucoseAnalyzedForPatient(Id patientId)
     {
-        var maybePatient = await _patientService.Get(patientId);
-        if (maybePatient is None<IPatient> {Because: ReasonForNone.ItemDoesNotExist or ReasonForNone.ServiceNotYetInitialized} none)
+        var patient = await _patientService.Get(patientId);
+        if (patient is null)
         {
-            _logger.LogInformation("Trying again because {none}", none);
+            // There are two cases were we must try again
+            //  1. The server is still initializing
+            //  2. The patient has not yet been added because it is eventual consistent
+
+            _logger.LogInformation("Trying again");
             await Task.Delay(TimeSpan.FromSeconds(10));
             await HandleGlucoseAnalyzedForPatient(patientId);
             return;
         }
-        var patient = maybePatient.EnsureHasValue();
         
         var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
         
-        var labAnswer = labAnswers.OfType<GlucoseLabAnswer>().First();
-        var shouldNotifyPatient = patient is IHasZodiacSign hasZodiacSign
-            ? labAnswer.Value > _glucoseTolerance.ZodiacTolerance[hasZodiacSign.ZodiacSign]
-            : labAnswer.Value > _glucoseTolerance.DefaultTolerance;
+        var labAnswer = labAnswers.Where(x => x.ExaminationType == ExaminationType.Glucose).First();
+        var shouldNotifyPatient = patient.ZodiacSign.HasValue
+            ? labAnswer.GlucoseLevel > _glucoseTolerance.ZodiacTolerance[patient.ZodiacSign.Value]
+            : labAnswer.GlucoseLevel > _glucoseTolerance.DefaultTolerance;
             
         if (!shouldNotifyPatient)
         {
             return;
         }
-            
-        if (patient.PhoneNumber is PhoneNumber phoneNumber)
+        
+        if (patient.PhoneNumber is not null)
         {
-            _smsService.TellPatientToEatLessSugar(phoneNumber, labAnswer);
+            _smsService.TellPatientToEatLessSugar(patient.PhoneNumber, labAnswer);
             return;
         }
             
-        if (patient.MailAddress is MailAddress mailAddress)
+        if (patient.MailAddress is not null)
         {
-            _mailService.TellPatientToEatLessSugar(mailAddress, labAnswer);
+            _mailService.TellPatientToEatLessSugar(patient.MailAddress, labAnswer);
         }
     }
 }
