@@ -24,16 +24,16 @@ public class PatientController
     }
 
     [HttpGet("{idValue}")]
-    public Patient Read(int idValue)
+    public IOption<Patient> Read(int idValue)
     {
         if (!InitializationTask.IsCompleted)
         {
-            return null;
+            return new None<Patient>(ReasonForNone.ServiceNotYetInitialized);
         }
 
         return Patients.TryGetValue(new Id(idValue), out var patient)
-            ? patient
-            : null;
+            ? new Some<Patient>(patient)
+            : new None<Patient>(ReasonForNone.ItemDoesNotExist);
     }
 
     [HttpPost]
