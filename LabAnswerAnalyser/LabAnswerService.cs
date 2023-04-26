@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Transport;
 using Transport.Lab;
 using Transport.Patient;
 
@@ -35,8 +34,7 @@ public class LabAnswerService : ILabAnswerService
         
         var jsonResponse = await result.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<IEnumerable<LabAnswer>>(jsonResponse, _settings)
-               ?? null;
+        return JsonConvert.DeserializeObject<IEnumerable<LabAnswer>>(jsonResponse, _settings);
     }
 
     public async Task<IEnumerable<LabAnswer>> ByPatientThrowIfNone(Id id)

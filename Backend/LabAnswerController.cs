@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Transport;
 using Transport.Lab;
 using Transport.Patient;
 

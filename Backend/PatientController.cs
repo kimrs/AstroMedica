@@ -15,7 +15,7 @@ public class PatientController
         new Patient(new Id(2), new Name("Brian Kernighan"), null, null, new MailAddress("Portveien 2")),
     }.ToDictionary(x => x.Id);
 
-    private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
+    private static readonly Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
 
     private readonly ILogger<PatientController> _logger;
     public PatientController(ILogger<PatientController> logger)
@@ -44,6 +44,7 @@ public class PatientController
             return;
         }
         Patients.Add(patient.Id, patient);
+        _logger.LogInformation("Created {patient}", patient);
     }
     
 }

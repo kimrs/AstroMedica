@@ -8,8 +8,14 @@ public record Patient(
     MailAddress MailAddress
 );
 
-public record PhoneNumber(string Value)
+public class PhoneNumber
 {
+    public string Value { get; }
+
+    public PhoneNumber(string value)
+    {
+        Value = value;
+    }
     public override string ToString() => Value;
 }
 

@@ -37,13 +37,16 @@ services.AddSingleton<ILabAnswerService, LabAnswerService>();
 services.AddSingleton<IMailService, MailService>();
 services.AddSingleton<ISmsService, SmsService>();
 services.AddSingleton<IGlucoseAnalyzer, GlucoseAnalyser>();
-    
+
+var patientId = int.Parse(Environment.GetCommandLineArgs()[1]);
 var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 var patientService = scope.ServiceProvider.GetRequiredService<IPatientService>();
-if (GlucoseAnalyser.PatientId == 3)
+if (patientId == 3)
 {
+#pragma warning disable CS4014
     patientService.Create(
+#pragma warning restore CS4014
         new Patient(
             new Id(3),
             new Name("Grace Hopper"),
@@ -53,6 +56,4 @@ if (GlucoseAnalyser.PatientId == 3)
         ));
 }
 var glucoseAnalyzer = scope.ServiceProvider.GetRequiredService<IGlucoseAnalyzer>();
-    
-var patientId = new Id(GlucoseAnalyser.PatientId);
-await glucoseAnalyzer.HandleGlucoseAnalyzedForPatient(patientId);
+await glucoseAnalyzer.HandleGlucoseAnalyzedForPatient(new Id(patientId));
