@@ -28,12 +28,12 @@ public class PatientController
     {
         if (!InitializationTask.IsCompleted)
         {
-            return new None<IPatient>(ReasonForNone.ServiceNotYetInitialized);
+            return new None<IPatient>(new ServiceNotYetInitialized());
         }
         
         return Patients.TryGetValue(new Id(idValue), out var patient)
             ? new Some<IPatient>(patient)
-            : new None<IPatient>(ReasonForNone.ItemDoesNotExist);
+            : new None<IPatient>(new ItemDoesNotExist());
     }
 
     [HttpPost]

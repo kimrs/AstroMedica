@@ -29,7 +29,7 @@ public class LabAnswerService : ILabAnswerService
         }
         catch (HttpRequestException )
         {
-            return new None<IEnumerable<ILabAnswer>>(ReasonForNone.ServiceUnavailable);
+            return new None<IEnumerable<ILabAnswer>>(new ServiceUnavailable());
         }
         
         var jsonResponse = await result.Content.ReadAsStringAsync();
@@ -37,7 +37,7 @@ public class LabAnswerService : ILabAnswerService
         settings.TypeNameHandling = TypeNameHandling.All;
         
         return JsonConvert.DeserializeObject<IOption<IEnumerable<ILabAnswer>>>(jsonResponse, settings)
-            ?? new None<IEnumerable<ILabAnswer>>(ReasonForNone.FailedToDeserialize);
+            ?? new None<IEnumerable<ILabAnswer>>(new FailedToDeserialize());
     }
 
     public async Task<IEnumerable<ILabAnswer>> ByPatientThrowIfNone(Id id)

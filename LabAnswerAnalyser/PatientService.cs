@@ -31,18 +31,18 @@ public class PatientService : IPatientService
         }
         catch (HttpRequestException)
         {
-            return new None<IPatient>(ReasonForNone.ServiceUnavailable);
+            return new None<IPatient>(new ServiceUnavailable());
         }
         var jsonResponse = await result.Content.ReadAsStringAsync();
 
         try
         {
             return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings)
-                   ?? new None<IPatient>(ReasonForNone.FailedToDeserialize);
+                   ?? new None<IPatient>(new FailedToDeserialize());
         }
         catch (JsonReaderException)
         {
-            return new None<IPatient>(ReasonForNone.FailedToDeserialize);
+            return new None<IPatient>(new FailedToDeserialize());
         }
     }
 

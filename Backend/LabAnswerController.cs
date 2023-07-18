@@ -24,6 +24,6 @@ public class LabAnswerController
     {
         return LabAnswers.TryGetValue(new Id(idValue), out var labAnswers)
             ? new Some<IEnumerable<ILabAnswer>>(labAnswers)
-            : new None<IEnumerable<ILabAnswer>>(ReasonForNone.ItemDoesNotExist);
+            : new None<IEnumerable<ILabAnswer>>(new ItemDoesNotExist());
     }
 }

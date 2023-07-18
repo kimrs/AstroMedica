@@ -47,7 +47,7 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
     public async Task HandleGlucoseAnalyzedForPatient(Id patientId)
     {
         var maybePatient = await _patientService.Get(patientId);
-        if (maybePatient is None<IPatient> {Because: ReasonForNone.ItemDoesNotExist or ReasonForNone.ServiceNotYetInitialized} none)
+        if (maybePatient is None<IPatient> {Because: ItemDoesNotExist or ServiceNotYetInitialized} none)
         {
             _logger.LogInformation("Trying again because {none}", none);
             await Task.Delay(TimeSpan.FromSeconds(10));

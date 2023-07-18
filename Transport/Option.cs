@@ -18,19 +18,39 @@ public record Some<T>(T Value) : IOption<T>
     }
 }
 
-public record None<T>(ReasonForNone Because) : IOption<T>
+public record None<T>(IReason Because) : IOption<T>
 {
     public T EnsureHasValue()
     {
-        var message = Because switch
-        {
-            ReasonForNone.ServiceUnavailable => "Service unavailable, message placed on the error queue",
-            ReasonForNone.ServiceNotYetInitialized => "Service is still initializing. Retrying in a couple of minutes",
-            ReasonForNone.ItemDoesNotExist => "Item does not exist",
-            _ => "An error occured"
-        };
-        throw new Exception(message);
+        throw Because.Exception;
     }
 }
 
-public enum ReasonForNone { ServiceUnavailable, ServiceNotYetInitialized, ItemDoesNotExist, FailedToDeserialize}
+public interface IReason
+{
+    Exception Exception { get; }
+}
+
+public record ServiceUnavailable
+    : IReason
+{
+    public Exception Exception => new("Service unavailable, message placed on the error queue");
+}
+
+public record ServiceNotYetInitialized
+    : IReason
+{
+    public Exception Exception => new("Service is still initializing. Retrying in a couple of minutes");
+}
+
+public record ItemDoesNotExist
+    : IReason
+{
+    public Exception Exception => new("Item does not exist");
+}
+
+public record FailedToDeserialize
+    : IReason
+{
+    public Exception Exception => new("Failed to deserialize object");
+}
