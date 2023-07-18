@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Transport;
 using Transport.Lab;
 using Transport.Patient;
 

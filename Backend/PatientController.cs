@@ -8,14 +8,14 @@ namespace Backend;
 [Route("[controller]")]
 public class PatientController
 {
-    private static readonly Dictionary<Id, Patient> Patients = new List<Patient>()
+    private static readonly Dictionary<Id, IPatient> Patients = new List<IPatient>()
     {
         new Patient(new Id(0), new Name("Tony Hoare"), ZodiacSign.Aries, new PhoneNumber("815 493 00"), null),
         new Patient(new Id(1), new Name("Ada Lovelace"), ZodiacSign.Gemini, null, null),
         new Patient(new Id(2), new Name("Brian Kernighan"), null, null, new MailAddress("Portveien 2")),
     }.ToDictionary(x => x.Id);
 
-    private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
+    private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(10));
 
     private readonly ILogger<PatientController> _logger;
     public PatientController(ILogger<PatientController> logger)
@@ -24,7 +24,7 @@ public class PatientController
     }
 
     [HttpGet("{idValue}")]
-    public Patient Read(int idValue)
+    public IPatient Read(int idValue)
     {
         if (!InitializationTask.IsCompleted)
         {

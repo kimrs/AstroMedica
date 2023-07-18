@@ -6,7 +6,7 @@ namespace LabAnswerAnalyser;
 
 public interface IPatientService
 {
-    Task<Patient> Get(Id id);
+    Task<IPatient> Get(Id id);
     Task Create(Patient patient);
 }
 
@@ -20,7 +20,7 @@ public class PatientService : IPatientService
         _httpClient = httpClient;
     }
 
-    public async Task<Patient> Get(Id id)
+    public async Task<IPatient> Get(Id id)
     {
         HttpResponseMessage result;
         try
@@ -35,7 +35,7 @@ public class PatientService : IPatientService
 
         try
         {
-            return JsonConvert.DeserializeObject<Patient>(jsonResponse, _settings);
+            return JsonConvert.DeserializeObject<IPatient>(jsonResponse, _settings);
         }
         catch (JsonReaderException)
         {
