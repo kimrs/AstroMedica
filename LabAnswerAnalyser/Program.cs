@@ -38,10 +38,11 @@ services.AddSingleton<IMailService, MailService>();
 services.AddSingleton<ISmsService, SmsService>();
 services.AddSingleton<IGlucoseAnalyzer, GlucoseAnalyser>();
     
+var patientId = int.Parse(Environment.GetCommandLineArgs()[1]);
 var serviceProvider = services.BuildServiceProvider();
 using var scope = serviceProvider.CreateScope();
 var patientService = scope.ServiceProvider.GetRequiredService<IPatientService>();
-if (GlucoseAnalyser.PatientId == 3)
+if (patientId == 3)
 {
     patientService.Create(
         new Patient(
@@ -54,5 +55,4 @@ if (GlucoseAnalyser.PatientId == 3)
 }
 var glucoseAnalyzer = scope.ServiceProvider.GetRequiredService<IGlucoseAnalyzer>();
     
-var patientId = new Id(GlucoseAnalyser.PatientId);
 await glucoseAnalyzer.HandleGlucoseAnalyzedForPatient(patientId);
