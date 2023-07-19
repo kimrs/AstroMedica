@@ -303,6 +303,7 @@ to return null when an exception occurs; instead, we return `None` along with th
         }
     }
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/1494e6fe8412e63fb7c46388dd5cfdea5689df5a/LabAnswerAnalyser/PatientService.cs#L24-L45C6)
 
 Usually, your controller method should return an `ActionResult`, wrapping the returned content. For instance, it would be more appropriate
 to return a 404 status if an item doesn't exist. However, to illustrate our point, let's implement `IOption` in our endpoint:
@@ -321,8 +322,29 @@ to return a 404 status if an item doesn't exist. However, to illustrate our poin
             : new None<IPatient>(new ItemDoesNotExist());
     }
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/1494e6fe8412e63fb7c46388dd5cfdea5689df5a/Backend/PatientController.cs#L38-L49C4)
+
 With the `_patientService` now returning an `IOption` instead of null, we can improve the `GlucoseAnalyzer`. Our code becomes more descriptive,
 eliminating the need for comments explaining potential null returns.
+
+```csharp
+var maybePatient = await _patientService.Get(patientId);
+if (maybePatient is None<IPatient> {Because: ItemDoesNotExist or ServiceNotYetInitialized})
+{
+    _logger.LogInformation("Trying again");
+    
+    await Task.Delay(TimeSpan.FromSeconds(10));
+    await HandleGlucoseAnalyzedForPatient(patientId);
+    return;
+}
+
+var patient = maybePatient.EnsureHasValue();
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/1494e6fe8412e63fb7c46388dd5cfdea5689df5a/LabAnswerAnalyser/GlucoseAnalyser.cs#L41-L51)
+
+Please note, the condition in the if clause only covers potential null returns as indicated by the old comments. It excludes cases we uncovered
+where null was returned due to an unreachable server or failed deserialization. I argue that these were bugs in the original system. If the server
+is off, it's unlikely to be back up within the next 10 seconds. Similarly, if deserialization failed once, it's not likely that waiting will resolve the issue.
 
 
 
