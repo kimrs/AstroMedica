@@ -1,14 +1,18 @@
 ﻿namespace Transport.Lab;
 
-public record LabAnswer(GlucoseLevel GlucoseLevel, BinaryLabAnswer? BinaryLabAnswer, ExaminationType ExaminationType)
-{
-    public static bool operator >(LabAnswer a, GlucoseLevel b) => a.GlucoseLevel > b;
-    public static bool operator <(LabAnswer a, GlucoseLevel b) => a.GlucoseLevel < b;
+public interface ILabAnswer { }
 
-    public override string ToString() => ExaminationType switch
-    {
-        ExaminationType.Glucose => $"{nameof(LabAnswer)}:{GlucoseLevel}",
-        ExaminationType.Covid19 => $"{nameof(LabAnswer)}:{BinaryLabAnswer}",
-        _ => string.Empty
-    };
+public record GlucoseLabAnswer(GlucoseLevel GlucoseLevel)
+    : ILabAnswer
+{
+    public static bool operator >(GlucoseLabAnswer a, GlucoseLevel b) => a.GlucoseLevel > b;
+    public static bool operator <(GlucoseLabAnswer a, GlucoseLevel b) => a.GlucoseLevel < b;
+    public override string ToString() => $"{nameof(GlucoseLabAnswer)}:{GlucoseLevel}";
 }
+
+public record Covid19LabAnswer(BinaryLabAnswer BinaryLabAnswer)
+    : ILabAnswer
+{
+    public override string ToString() => $"{nameof(Covid19LabAnswer)}:{BinaryLabAnswer}";
+}
+

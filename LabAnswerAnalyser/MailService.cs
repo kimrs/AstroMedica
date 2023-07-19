@@ -6,7 +6,7 @@ namespace LabAnswerAnalyser;
 
 public interface IMailService
 {
-    void TellPatientToEatLessSugar(IMailAddress mailAddress, LabAnswer labAnswer);
+    void TellPatientToEatLessSugar(IMailAddress mailAddress, GlucoseLabAnswer labAnswer);
 }
 
 public class MailService : IMailService
@@ -19,7 +19,7 @@ public class MailService : IMailService
         _logger = logger;
     }
     
-    public void TellPatientToEatLessSugar(IMailAddress mailAddress, LabAnswer labAnswer)
+    public void TellPatientToEatLessSugar(IMailAddress mailAddress, GlucoseLabAnswer labAnswer)
     {
         _logger.LogInformation($"Letter was sent to {mailAddress} to inform about {labAnswer}");
     }

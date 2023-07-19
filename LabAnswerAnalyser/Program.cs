@@ -44,7 +44,9 @@ using var scope = serviceProvider.CreateScope();
 var patientService = scope.ServiceProvider.GetRequiredService<IPatientService>();
 if (patientId == 3)
 {
+#pragma warning disable CS4014
     patientService.Create(
+#pragma warning restore CS4014
         new Patient(
             new Id(3),
             new Name("Grace Hopper"),
