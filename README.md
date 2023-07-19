@@ -135,3 +135,151 @@ for an accurate understanding of when or why null might occur. It behooves us to
             return;
         }
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/416804cff0cb0908779eaef4c9070df2a67a6beb/LabAnswerAnalyser/GlucoseAnalyser.cs#L40-L51)
+
+Upon examining the Get method in `PatientService`, we discover two instances where null is returned. These occur when the `_httpClient` throws an
+`HttpRequestException`, or if the `JsonConvert.DeserializeObject` method throws a `JsonReaderException`. Here, we have a direct attribution of two
+implicit meanings to null:
+
+* The server is offline, represented by an `HttpRequestException`.
+* Deserialization fails, leading to a `JsonReaderException`.
+
+Interestingly, neither of these circumstances align with the two potential scenarios outlined in the code comments we examined earlier.
+```csharp
+public async Task<IPatient> Get(Id id)
+{
+    HttpResponseMessage result;
+    try
+    {
+        result = await _httpClient.GetAsync($"patient/{id.Value}");
+    }
+    catch (HttpRequestException)
+    {
+        return null;
+    }
+    var jsonResponse = await result.Content.ReadAsStringAsync();
+
+    try
+    {
+        return JsonConvert.DeserializeObject<IPatient>(jsonResponse, _settings);
+    }
+    catch (JsonReaderException)
+    {
+        return null;
+    }
+}
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/416804cff0cb0908779eaef4c9070df2a67a6beb/LabAnswerAnalyser/PatientService.cs#L23C1-L44)
+
+Upon deeper investigation into the system, specifically the backend code, we start to unravel the original context of the comments. In the Read
+controller method, we can see that null is returned in two situations - either the server is still in the initialization phase, or the patient
+doesn't exist in the system.
+```csharp
+[HttpGet("{idValue}")]
+public IPatient Read(int idValue)
+{
+    if (!InitializationTask.IsCompleted)
+    {
+        return null;
+    }
+
+    return PatientDb.TryGetValue(new Id(idValue), out var patient)
+        ? patient
+        : null;
+}
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/416804cff0cb0908779eaef4c9070df2a67a6beb/Backend/PatientController.cs#L36-L49)
+
+With this discovery, we have now assigned four different implicit meanings to null throughout the system:
+* The server is offline
+* Deserialization fails
+* Server is still initializing
+* The patient does not exsist
+
+Four meanings for a single construct is a significant overloading of responsibility, especially for something as
+fundamental as null. Given that null has already been described as a "billion-dollar mistake" by its creator, assigning
+so many interpretations complicates matters even more. However, as we will see in the upcoming chapters, there are ways to mitigate these issues.
+
+# The `IOption<T>` Interface
+Before we delve further into possible solutions for our 'null' conundrum, let's first consider exceptions - a crucial tool
+in error handling within any software system.
+
+Exceptions should be used to handle scenarios that fall outside the normal operation of our business domain - particularly
+when an unexpected condition is encountered, causing the regular flow of the program to halt. If such an exception occurs,
+it's often more desirable for the system to fail immediately. Doing so provides several advantages:
+
+* Faster Error Discovery: By causing an immediate halt, exceptions help reveal the occurrence of an error promptly, leading to faster detection and resolution.
+* Easier Debugging: As exceptions provide a snapshot of the program's state at the moment of failure, they can serve as useful pointers to the error's source,
+thus making the debugging process easier.
+* Preventing Unexpected Behaviour: By failing fast, we prevent the program from continuing in an erroneous state, which could lead to unpredictable behavior
+and potentially more severe problems down the line.
+Remember, an error isn't always a bad thing if it halts execution. Rather than silently ignoring or masking the problem, causing immediate failure can be a
+more responsible way to handle unexpected scenarios. By recognizing and responding to errors appropriately, we can maintain a healthier, more robust codebase.
+
+In the case of our glucose analyzer from Astro Medica, the absence of a patient in the system might seem like a business domain problem at first glance.
+But, if we consider that the patient is supposed to be present when the glucose analysis takes place, the patient's absence becomes a technical error, not
+a business one.
+
+This design pattern, often known as the "Option pattern" or "Maybe pattern," is a powerful tool in helping to manage situations where a value may or may not
+be present due to technical issues. Here, instead of returning a null reference and losing information about why a value is missing, you wrap the value within
+an IOption<T> interface. The IOption can either be a Some (holding the value) or a None (indicating the absence of a value, along with a reason).
+
+```csharp
+public interface IOption<out T>
+{
+    T EnsureHasValue();
+}
+
+public record Some<T>(T Value) : IOption<T>
+{
+    public T EnsureHasValue()
+    {
+        if (Value is null)
+        {
+            throw new NullReferenceException(nameof(Value));
+        }
+
+        return Value;
+    }
+}
+
+public record None<T>(IReason Because) : IOption<T>
+{
+    public T EnsureHasValue()
+    {
+        throw Because.Exception;
+    }
+}
+
+public interface IReason
+{
+    Exception Exception { get; }
+}
+
+public record ServiceUnavailable
+    : IReason
+{
+    public Exception Exception => new("Service unavailable, message placed on the error queue");
+}
+
+public record ServiceNotYetInitialized
+    : IReason
+{
+    public Exception Exception => new("Service is still initializing. Retrying in a couple of minutes");
+}
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/416804cff0cb0908779eaef4c9070df2a67a6beb/Transport/Option.cs#L3-L44)
+
+In this code, the `EnsureHasValue()` method will either return the value (if it exists) or throw an exception detailing the reason
+for the absence of the value. This significantly improves clarity in debugging, as it captures the reason for the error directly in
+the code execution path. This pattern helps create a more maintainable and less error-prone codebase by making the absence of a value
+explicit and informative.
+
+## Implementing the `IOption<T>` in the glucose analyzer scenario
+We start by using `IOption<T>` in `PatientService`. Instead of returning a `Patient`, we return `IOption<IPatient>`. This eliminates the need
+to return null when an exception occurs; instead, we return `None` along with the appropriate reason.
+```csharp
+
+```
+
+
