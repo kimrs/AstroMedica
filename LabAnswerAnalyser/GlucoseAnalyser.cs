@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Transport;
 using Transport.Lab;
 using Transport.Patient;
 
@@ -37,18 +38,17 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
     
     public async Task HandleGlucoseAnalyzedForPatient(Id patientId)
     {
-        var patient = await _patientService.Get(patientId);
-        if (patient is null)
+        var maybePatient = await _patientService.Get(patientId);
+        if (maybePatient is None<IPatient> {Because: ItemDoesNotExist or ServiceNotYetInitialized})
         {
-            // There are two cases were we must try again
-            //  1. The server is still initializing
-            //  2. The patient has not yet been added because it is eventual consistent
-
             _logger.LogInformation("Trying again");
+            
             await Task.Delay(TimeSpan.FromSeconds(10));
             await HandleGlucoseAnalyzedForPatient(patientId);
             return;
         }
+
+        var patient = maybePatient.EnsureHasValue();
         
         var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
         var labAnswer = labAnswers.First(x => x.ExaminationType == ExaminationType.Glucose);

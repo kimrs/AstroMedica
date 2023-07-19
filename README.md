@@ -278,8 +278,53 @@ explicit and informative.
 ## Implementing the `IOption<T>` in the glucose analyzer scenario
 We start by using `IOption<T>` in `PatientService`. Instead of returning a `Patient`, we return `IOption<IPatient>`. This eliminates the need
 to return null when an exception occurs; instead, we return `None` along with the appropriate reason.
-```csharp
 
+```csharp
+    public async Task<IOption<IPatient>> Get(Id id)
+    {
+        HttpResponseMessage result;
+        try
+        {
+            result = await _httpClient.GetAsync($"patient/{id.Value}");
+        }
+        catch (HttpRequestException)
+        {
+            return new None<IPatient>(new ServiceUnavailable());
+        }
+        var jsonResponse = await result.Content.ReadAsStringAsync();
+
+        try
+        {
+            return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings);
+        }
+        catch (JsonReaderException)
+        {
+            return new None<IPatient>(new FailedToDeserialize());
+        }
+    }
 ```
+
+Usually, your controller method should return an `ActionResult`, wrapping the returned content. For instance, it would be more appropriate
+to return a 404 status if an item doesn't exist. However, to illustrate our point, let's implement `IOption` in our endpoint:
+
+```csharp
+    [HttpGet("{idValue}")]
+    public IOption<IPatient> Read(int idValue)
+    {
+        if (!InitializationTask.IsCompleted)
+        {
+            return new None<IPatient>(new ServiceNotYetInitialized());
+        }
+
+        return PatientDb.TryGetValue(new Id(idValue), out var patient)
+            ? new Some<IPatient>(patient)
+            : new None<IPatient>(new ItemDoesNotExist());
+    }
+```
+With the `_patientService` now returning an `IOption` instead of null, we can improve the `GlucoseAnalyzer`. Our code becomes more descriptive,
+eliminating the need for comments explaining potential null returns.
+
+
+
 
 
