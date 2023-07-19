@@ -547,6 +547,7 @@ public record LegacyPatient(
     IMailAddress MailAddress
 ) : IPatient;
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/8741996d2150b903f07ebaeddfdca02a16a0290a/Transport/Patient/Patient.cs#L11-L29)
 
 The glucose analyzer can then leverage this interface, making the decision process to notify the patient more explicit and intuitive:
 
@@ -560,6 +561,8 @@ The glucose analyzer can then leverage this interface, making the decision proce
         return;
     }
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/8741996d2150b903f07ebaeddfdca02a16a0290a/LabAnswerAnalyser/GlucoseAnalyser.cs#L56-L63)
+
 This solution eliminates the need for the comment explaining the null `ZodiacSign`, as the code now expresses this concept more clearly
 through the use of an interface. Additionally, this design adheres to the Open/Closed principle, allowing the system to easily accommodate
 new types of patients in the future without needing to modify existing code.
