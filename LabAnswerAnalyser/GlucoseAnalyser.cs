@@ -52,6 +52,10 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
         
         var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
         var labAnswer = labAnswers.First(x => x.ExaminationType == ExaminationType.Glucose);
+        if (labAnswer.GlucoseLevel == null)
+        {
+            throw new NullReferenceException(nameof(labAnswer.GlucoseLevel));
+        }
         
         // We do not have the zodiac sign of patients that registered before we incorporated astrology
         var shouldNotifyPatient = patient.ZodiacSign is not null
