@@ -34,14 +34,6 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
         _mailService = mailService;
         _logger = logger;
     }
-
-    /* For debugging purposes */
-    private const int PatientWithPhoneNumber = 0;
-    private const int PatientWithCovid = 1;
-    private const int LegacyPatient = 2;
-    private const int LazyInitializedPatient = 3;
-    public const int PatientId = PatientWithPhoneNumber;
-    /* For debugging purposes */
     
     public async Task HandleGlucoseAnalyzedForPatient(Id patientId)
     {
@@ -59,9 +51,10 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
         }
         
         var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
+        var labAnswer = labAnswers.First(x => x.ExaminationType == ExaminationType.Glucose);
         
-        var labAnswer = labAnswers.Where(x => x.ExaminationType == ExaminationType.Glucose).First();
-        var shouldNotifyPatient = patient.ZodiacSign.HasValue
+        // We do not have the zodiac sign of patients that registered before we incorporated astrology
+        var shouldNotifyPatient = patient.ZodiacSign is not null
             ? labAnswer.GlucoseLevel > _glucoseTolerance.ZodiacTolerance[patient.ZodiacSign.Value]
             : labAnswer.GlucoseLevel > _glucoseTolerance.DefaultTolerance;
             

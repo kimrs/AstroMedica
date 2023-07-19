@@ -8,20 +8,32 @@ namespace Backend;
 [Route("[controller]")]
 public class PatientController
 {
-    private static readonly Dictionary<Id, IPatient> Patients = new List<IPatient>()
+    private static readonly Dictionary<Id, IPatient> PatientDb = new List<IPatient>()
     {
-        new Patient(new Id(0), new Name("Tony Hoare"), ZodiacSign.Aries, new PhoneNumber("815 493 00"), null),
-        new Patient(new Id(1), new Name("Ada Lovelace"), ZodiacSign.Gemini, null, null),
-        new Patient(new Id(2), new Name("Brian Kernighan"), null, null, new MailAddress("Portveien 2")),
+        new Patient(
+            new Id(0),
+            new Name("Tony Hoare"),
+            ZodiacSign.Aries,
+            new PhoneNumber("815 493 00"),
+            MailAddress: null
+        ),
+        new Patient(
+            new Id(1),
+            new Name("Ada Lovelace"),
+            ZodiacSign.Gemini,
+            PhoneNumber: null,
+            MailAddress: null
+        ),
+        new Patient(
+            new Id(2),
+            new Name("Brian Kernighan"),
+            ZodiacSign: null,
+            PhoneNumber: null,
+            new MailAddress("Portveien 2")
+        )
     }.ToDictionary(x => x.Id);
 
-    private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(10));
-
-    private readonly ILogger<PatientController> _logger;
-    public PatientController(ILogger<PatientController> logger)
-    {
-        _logger = logger;
-    }
+    private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
 
     [HttpGet("{idValue}")]
     public IPatient Read(int idValue)
@@ -31,7 +43,7 @@ public class PatientController
             return null;
         }
 
-        return Patients.TryGetValue(new Id(idValue), out var patient)
+        return PatientDb.TryGetValue(new Id(idValue), out var patient)
             ? patient
             : null;
     }
@@ -39,11 +51,11 @@ public class PatientController
     [HttpPost]
     public void Create(Patient patient)
     {
-        if (Patients.ContainsKey(patient.Id))
+        if (PatientDb.ContainsKey(patient.Id))
         {
             return;
         }
-        Patients.Add(patient.Id, patient);
+        PatientDb.Add(patient.Id, patient);
     }
     
 }

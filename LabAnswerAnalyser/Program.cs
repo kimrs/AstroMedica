@@ -49,7 +49,7 @@ if (patientId == 3)
             new Id(3),
             new Name("Grace Hopper"),
             ZodiacSign.Taurus,
-            null,
+            PhoneNumber: null,
             new MailAddress("Flåklypa")
         ));
 }
