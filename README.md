@@ -24,7 +24,7 @@ And he included the object type with the pointer so we would have type checking 
 These were all good ideas that have helped us develop complex systems in less time.
 Unfortunately, he also invented the null reference.
 So now, the reference can be either the type you specified or null.
-And to avoid risking disaster, you must check for null every time you use it~~~~.
+And to avoid risking disaster, you must check for null every time you use it.
 
 The null reference became a source of numerous software bugs, crashes and vulnerabilities.
 And now, the "null pointer exception" is one of the most infamous software bugs.
@@ -361,7 +361,7 @@ but I suspect it has something to do with the `ExaminationType` enum.
 
 ```csharp
     var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
-    var labAnswer = labAnswers.First(x => x.ExaminationType == ExaminationType.Glucose);
+    var labAnswer = labAnswers.Where(x => x.ExaminationType == ExaminationType.Glucose).First();
     if (labAnswer.GlucoseLevel == null)
     {
         throw new NullReferenceException(nameof(labAnswer.GlucoseLevel));
@@ -447,6 +447,7 @@ public record Covid19LabAnswer(BinaryLabAnswer BinaryLabAnswer)
     public override string ToString() => $"{nameof(Covid19LabAnswer)}:{BinaryLabAnswer}";
 }
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/661aa6eee88d1789eed330dfb649eaac2e4c3f26/Transport/Lab/LabAnswer.cs#L3-L17)
 
 Of course, this change necessitates the migration of our database.
 
@@ -471,14 +472,16 @@ public class LabAnswerController
             }
         },
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/661aa6eee88d1789eed330dfb649eaac2e4c3f26/Backend/LabAnswerController.cs#L10C10-L28)
 
-Now that we've removed the enum that undermined the type system, we can and should use the OfType method, rather than Where.
-Also, as we are no longer setting the GlucoseLevel to null, the null-check is no longer necessary.
+Now that we've removed the enum that undermined the type system, we can and should use the `OfType` method, rather than `Where`.
+Also, as we are no longer setting the `GlucoseLevel` to null, the null-check is no longer necessary.
 
 ```csharp
     var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
     var labAnswer = labAnswers.OfType<GlucoseLabAnswer>().First();
 ```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/661aa6eee88d1789eed330dfb649eaac2e4c3f26/LabAnswerAnalyser/GlucoseAnalyser.cs#L53-L54)
 
 The OfType method is more appropriate here as it filters the collection based on the type, which is more idiomatic and efficient in this case compared to Where.
 
