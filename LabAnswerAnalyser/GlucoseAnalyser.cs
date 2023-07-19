@@ -53,9 +53,8 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
         var labAnswers = await _labAnswerService.ByPatientThrowIfNone(patient.Id);
         var labAnswer = labAnswers.OfType<GlucoseLabAnswer>().First();
         
-        // We do not have the zodiac sign of patients that registered before we incorporated astrology
-        var shouldNotifyPatient = patient.ZodiacSign is not null
-            ? labAnswer.GlucoseLevel > _glucoseTolerance.ZodiacTolerance[patient.ZodiacSign.Value]
+        var shouldNotifyPatient = patient is IHasZodiacSign hasZodiacSign
+            ? labAnswer.GlucoseLevel > _glucoseTolerance.ZodiacTolerance[hasZodiacSign.ZodiacSign]
             : labAnswer.GlucoseLevel > _glucoseTolerance.DefaultTolerance;
             
         if (!shouldNotifyPatient)

@@ -24,10 +24,9 @@ public class PatientController
             PhoneNumber: null,
             MailAddress: null
         ),
-        new Patient(
+        new LegacyPatient(
             new Id(2),
             new Name("Brian Kernighan"),
-            ZodiacSign: null,
             PhoneNumber: null,
             new MailAddress("Portveien 2")
         )
