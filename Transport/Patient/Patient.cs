@@ -4,15 +4,26 @@ public interface IPatient
 {
     Id Id { get; }
     Name Name { get; }
-    ZodiacSign? ZodiacSign { get; }
     IPhoneNumber PhoneNumber { get; }
     IMailAddress MailAddress { get; }
+}
+
+public interface IHasZodiacSign
+{
+    ZodiacSign ZodiacSign { get; }
 }
 
 public record Patient(
     Id Id,
     Name Name,
-    ZodiacSign? ZodiacSign,
+    ZodiacSign ZodiacSign,
+    IPhoneNumber PhoneNumber,
+    IMailAddress MailAddress
+) : IPatient, IHasZodiacSign;
+
+public record LegacyPatient(
+    Id Id,
+    Name Name,
     IPhoneNumber PhoneNumber,
     IMailAddress MailAddress
 ) : IPatient;

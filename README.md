@@ -483,7 +483,89 @@ Also, as we are no longer setting the `GlucoseLevel` to null, the null-check is 
 ```
 [snippet source](https://github.com/kimrs/AstroMedica/blob/661aa6eee88d1789eed330dfb649eaac2e4c3f26/LabAnswerAnalyser/GlucoseAnalyser.cs#L53-L54)
 
-The OfType method is more appropriate here as it filters the collection based on the type, which is more idiomatic and efficient in this case compared to Where.
+The `OfType` method is more appropriate here as it filters the collection based on the type, which is more idiomatic and efficient in this case compared to `Where`.
+
+# Leveraging Interfaces for Variability
+Sometimes, in software design, we encounter scenarios where different classes represent variations of the same conceptual entity.
+A slight difference in characteristics can lead to the presence of null values in some properties, indicating they are not relevant for
+certain variants. Failing to express this difference in our code often leads to these null values. We will explore an approach to address
+this issue in this section using interfaces.
+
+After retrieving the LabAnswer, we decide whether to notify the patient based on their zodiac sign. However, we have some patients registered
+before we incorporated astrology into our system. For these "legacy" patients, we don't have zodiac signs, and we resort to using a default
+glucose tolerance. Implicitly, by using null for the `ZodiacSign`, we say that null means the property was not relevant at the time of patient
+registration. So let us remove this implicit meaning.
+
+```csharp
+    // We do not have the zodiac sign of patients that registered before we incorporated astrology
+    var shouldNotifyPatient = patient.ZodiacSign is not null
+        ? labAnswer.GlucoseLevel > _glucoseTolerance.ZodiacTolerance[patient.ZodiacSign.Value]
+        : labAnswer.GlucoseLevel > _glucoseTolerance.DefaultTolerance;
+        
+    if (!shouldNotifyPatient)
+    {
+        return;
+    }
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/6b34199e3ee06fe768a107d5744ae7c8aa13c056/LabAnswerAnalyser/GlucoseAnalyser.cs#L60-L68C10)
+
+Thus, we need to accommodate two types of patients in our code - ordinary patients who have a zodiac sign and legacy patients who don't.
+This dichotomy, however, is not currently expressed in our code.
+
+```csharp
+public record Patient(
+    Id Id,
+    Name Name,
+    ZodiacSign? ZodiacSign,
+    IPhoneNumber PhoneNumber,
+    IMailAddress MailAddress
+) : IPatient;
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/6b34199e3ee06fe768a107d5744ae7c8aa13c056/Transport/Patient/Patient.cs#L12-L18)
+
+As before, splitting the class into `Patient` and `LegacyPatient` could resolve this issue. However, to maintain flexibility for future expansion
+(in case we need to accommodate more types of patients), we could encapsulate the presence of a `ZodiacSign` in an interface - `IHasZodiacSign`.
+
+```csharp
+public interface IHasZodiacSign
+{
+    ZodiacSign ZodiacSign { get; }
+}
+
+public record Patient(
+    Id Id,
+    Name Name,
+    ZodiacSign ZodiacSign,
+    IPhoneNumber PhoneNumber,
+    IMailAddress MailAddress
+) : IPatient, IHasZodiacSign;
+
+public record LegacyPatient(
+    Id Id,
+    Name Name,
+    IPhoneNumber PhoneNumber,
+    IMailAddress MailAddress
+) : IPatient;
+```
+
+The glucose analyzer can then leverage this interface, making the decision process to notify the patient more explicit and intuitive:
+
+```csharp
+    var shouldNotifyPatient = patient is IHasZodiacSign hasZodiacSign
+        ? labAnswer.GlucoseLevel > _glucoseTolerance.ZodiacTolerance[hasZodiacSign.ZodiacSign]
+        : labAnswer.GlucoseLevel > _glucoseTolerance.DefaultTolerance;
+        
+    if (!shouldNotifyPatient)
+    {
+        return;
+    }
+```
+This solution eliminates the need for the comment explaining the null `ZodiacSign`, as the code now expresses this concept more clearly
+through the use of an interface. Additionally, this design adheres to the Open/Closed principle, allowing the system to easily accommodate
+new types of patients in the future without needing to modify existing code.
+
+To summarize, by leveraging interfaces, we were able to express variability in our `Patient` class, improving the clarity of our code and
+eliminating unnecessary null checks.
 
 
 
