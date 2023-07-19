@@ -347,6 +347,20 @@ where null was returned due to an unreachable server or failed deserialization. 
 is off, it's unlikely to be back up within the next 10 seconds. Similarly, if deserialization failed once, it's not likely that waiting will resolve the issue.
 
 
+# Eliminating Nullable Properties through Better Modeling
+Often, the presence of 'null' values in code can indicate a problem with the modeling. In particular, 
+using enum values for type information can lead to issues, a phenomenon I've observed quite often.
+We'll explore this in more detail in the following section.
+
+After retrieving the patient details, we proceed to fetch the lab answers. The name of the method,
+`ByPatientThrowIfNone`, suggests that it throws an exception if it's unable to retrieve any lab answers
+for a given patient. This use of exceptions indicates that it's not part of the business logic, i.e.,
+the glucose analyzer is designed to only run if lab answers exist. After retrieving the lab answer, we
+perform a null check on `GlucoseLevel`. There's no explicit explanation for when `GlucoseLevel` might be null,
+but I suspect it has something to do with the `ExaminationType` enum.
+
+```csharp
+```
 
 
 
