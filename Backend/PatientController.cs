@@ -36,16 +36,16 @@ public class PatientController
     private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
 
     [HttpGet("{idValue}")]
-    public IPatient Read(int idValue)
+    public IOption<IPatient> Read(int idValue)
     {
         if (!InitializationTask.IsCompleted)
         {
-            return null;
+            return new None<IPatient>(new ServiceNotYetInitialized());
         }
 
         return PatientDb.TryGetValue(new Id(idValue), out var patient)
-            ? patient
-            : null;
+            ? new Some<IPatient>(patient)
+            : new None<IPatient>(new ItemDoesNotExist());
     }
 
     [HttpPost]

@@ -1,12 +1,13 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
+using Transport;
 using Transport.Patient;
 
 namespace LabAnswerAnalyser;
 
 public interface IPatientService
 {
-    Task<IPatient> Get(Id id);
+    Task<IOption<IPatient>> Get(Id id);
     Task Create(Patient patient);
 }
 
@@ -20,7 +21,7 @@ public class PatientService : IPatientService
         _httpClient = httpClient;
     }
 
-    public async Task<IPatient> Get(Id id)
+    public async Task<IOption<IPatient>> Get(Id id)
     {
         HttpResponseMessage result;
         try
@@ -29,17 +30,17 @@ public class PatientService : IPatientService
         }
         catch (HttpRequestException)
         {
-            return null;
+            return new None<IPatient>(new ServiceUnavailable());
         }
         var jsonResponse = await result.Content.ReadAsStringAsync();
 
         try
         {
-            return JsonConvert.DeserializeObject<IPatient>(jsonResponse, _settings);
+            return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings);
         }
         catch (JsonReaderException)
         {
-            return null;
+            return new None<IPatient>(new FailedToDeserialize());
         }
     }
 
