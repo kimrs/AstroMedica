@@ -9,64 +9,44 @@ namespace Backend;
 [Route("[controller]")]
 public class LabAnswerController
 {
-    private static readonly Dictionary<Id, List<LabAnswer>> LabAnswerDb = new()
+    private static readonly Dictionary<Id, List<ILabAnswer>> LabAnswerDb = new()
     {
         {
             new Id(0),
-            new List<LabAnswer>
+            new List<ILabAnswer>
             {
-                new (
-                    new GlucoseLevel(60),
-                    BinaryLabAnswer: null,
-                    ExaminationType.Glucose
-                )
+                new GlucoseLabAnswer(new GlucoseLevel(60))
             }
         },
         {
             new Id(1),
-            new List<LabAnswer>
+            new List<ILabAnswer>
             {
-                new (
-                    new GlucoseLevel(50),
-                    BinaryLabAnswer: null,
-                    ExaminationType.Glucose
-                ),
-                new (
-                    GlucoseLevel: null,
-                    BinaryLabAnswer.Positive,
-                    ExaminationType.Covid19
-                )
+                new GlucoseLabAnswer(new GlucoseLevel(50)),
+                new Covid19LabAnswer(BinaryLabAnswer.Positive)
             }
         },
         {
             new Id(2),
-            new List<LabAnswer>
+            new List<ILabAnswer>
             {
-                new (
-                    new GlucoseLevel(50),
-                    BinaryLabAnswer: null,
-                    ExaminationType.Glucose
-                )
+                new GlucoseLabAnswer(new GlucoseLevel(50))
             }
         },
         {
             new Id(3),
-            new List<LabAnswer>
+            new List<ILabAnswer>
             {
-                new (
-                    new GlucoseLevel(50),
-                    BinaryLabAnswer: null,
-                    ExaminationType.Glucose
-                )
+                new GlucoseLabAnswer(new GlucoseLevel(50))
             }
         }
     };
 
     [HttpGet("{idValue}")]
-    public IEnumerable<LabAnswer> Read(int idValue)
+    public IOption<IEnumerable<ILabAnswer>> Read(int idValue)
     {
         return LabAnswerDb.TryGetValue(new Id(idValue), out var labAnswers)
-            ? labAnswers
-            : null;
+            ? new Some<IEnumerable<ILabAnswer>>(labAnswers)
+            : new None<IEnumerable<ILabAnswer>>(new ItemDoesNotExist());
     }
 }

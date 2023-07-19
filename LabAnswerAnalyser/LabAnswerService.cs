@@ -7,8 +7,8 @@ namespace LabAnswerAnalyser;
 
 public interface ILabAnswerService
 {
-    Task<IEnumerable<LabAnswer>> ByPatientId(Id id);
-    Task<IEnumerable<LabAnswer>> ByPatientThrowIfNone(Id id);
+    Task<IOption<IEnumerable<ILabAnswer>>> ByPatientId(Id id);
+    Task<IEnumerable<ILabAnswer>> ByPatientThrowIfNone(Id id);
 }
 
 public class LabAnswerService : ILabAnswerService
@@ -21,7 +21,7 @@ public class LabAnswerService : ILabAnswerService
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<LabAnswer>> ByPatientId(Id id)
+    public async Task<IOption<IEnumerable<ILabAnswer>>> ByPatientId(Id id)
     {
         HttpResponseMessage result;
         try
@@ -35,18 +35,20 @@ public class LabAnswerService : ILabAnswerService
         
         var jsonResponse = await result.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<IEnumerable<LabAnswer>>(jsonResponse, _settings)
-               ?? null;
+        try
+        {
+            return JsonConvert.DeserializeObject<IOption<IEnumerable<ILabAnswer>>>(jsonResponse, _settings);
+        }
+        catch (JsonReaderException)
+        {
+            return new None<IEnumerable<ILabAnswer>>(new FailedToDeserialize());
+        }
     }
 
-    public async Task<IEnumerable<LabAnswer>> ByPatientThrowIfNone(Id id)
+    public async Task<IEnumerable<ILabAnswer>> ByPatientThrowIfNone(Id id)
     {
         var result = await ByPatientId(id);
-        if (result is null)
-        {
-            throw new Exception("LabAnswer is null");
-        }
 
-        return result;
+        return result.EnsureHasValue();
     }
 }

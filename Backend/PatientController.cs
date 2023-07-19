@@ -33,12 +33,12 @@ public class PatientController
         )
     }.ToDictionary(x => x.Id);
 
-    private static Task InitializationTask = Task.Delay(TimeSpan.FromSeconds(5));
+    private static Task _initializationTask = Task.Delay(TimeSpan.FromSeconds(5));
 
     [HttpGet("{idValue}")]
     public IOption<IPatient> Read(int idValue)
     {
-        if (!InitializationTask.IsCompleted)
+        if (!_initializationTask.IsCompleted)
         {
             return new None<IPatient>(new ServiceNotYetInitialized());
         }
