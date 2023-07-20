@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "PhoneNumberPatient": {
+      "commandName": "Executable",
+      "executablePath": "C:\\tmp\\AstroMedica\\LabAnswerAnalyser\\bin\\Debug\\net7.0\\LabAnswerAnalyser.exe",
+      "commandLineArgs": "0"
+    },
+    "CovidPatient": {
+      "commandName": "Executable",
+      "executablePath": "C:\\tmp\\AstroMedica\\LabAnswerAnalyser\\bin\\Debug\\net7.0\\LabAnswerAnalyser.exe",
+      "commandLineArgs": "1"
+    },
+    "LegacyPatient": {
+      "commandName": "Executable",
+      "executablePath": "C:\\tmp\\AstroMedica\\LabAnswerAnalyser\\bin\\Debug\\net7.0\\LabAnswerAnalyser.exe",
+      "commandLineArgs": "2"
+    },
+    "LazyInitializedPatient": {
+      "commandName": "Executable",
+      "executablePath": "C:\\tmp\\AstroMedica\\LabAnswerAnalyser\\bin\\Debug\\net7.0\\LabAnswerAnalyser.exe",
+      "commandLineArgs": "3"
+    }
+  }
+}
