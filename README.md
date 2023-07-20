@@ -3,12 +3,14 @@ This repository houses a case study designed to illustrate the issues with using
 The software under examination is a glucose analyzer created by the fictitious health tech company, Astro Medica.
 
 This glucose analyzer consists of a backend server and a console application.
+To run the server use the `Backend: https` run configuration.
+
 You can run the LabAnswerAnalyser with the patient ID as a command-line argument, provided the server is up and running.
-Here are some IDs you can use for testing:
-* 0 - Tony Hoare, a standard patient with a phone number but no email address.
-* 1 - Ada Lovelace, a patient who hasn't provided a phone number.
-* 2 - Brian Kernighan, a patient who hasn't provided their zodiac sign.
-* 3 - Grace Hopper, a patient added concurrently as the tool is run.
+These are run configurations you can use for testing:
+* `PhoneNumberPatient` a standard patient with a phone number but no email address.
+* `CovidPatient` a covid patient who hasn't provided a phone number.
+* `LegacyPatient` a patient who hasn't provided their zodiac sign.
+* `LazyInitializedPatient` a patient added concurrently as the tool is run.
 
 While it's encouraged to run the tool and experiment with the various patient profiles,
 it's not strictly necessary to do so in order to follow the assignment.
