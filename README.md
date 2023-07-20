@@ -708,3 +708,23 @@ With this update, we handle the potential null return of `DeserializeObject` met
 reason, thereby explicitly representing the lack of a patient result due to a failed deserialization.
 
 # Summary
+We began with an application that assigned seven distinct interpretations to the null value, each corresponding to a different scenario:
+
+* The server is offline
+* The server is initializing
+* Failure to deserialize the server's response
+* Item was not found
+* Property is not applicable for a given type
+* Property was not relevant at the time of object creation
+* Property is optional and has not been configured
+
+Our challenge was to refactor the code to reduce ambiguity and improve clarity.
+By using five techniques, we successfully eliminated all implicit meanings assigned to null.
+
+* IOption<T>
+* Better modeling
+* Leveraging interfaces
+* Explicitly representing optional data
+* Enabling nullable reference types
+
+By applying these methods, we have transformed the application into a more maintainable, bug-resilient structure, thereby enhancing its long-term sustainability.
