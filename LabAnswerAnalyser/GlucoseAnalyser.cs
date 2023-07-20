@@ -62,13 +62,13 @@ public class GlucoseAnalyser : IGlucoseAnalyzer
             return;
         }
         
-        if (patient.PhoneNumber is not null)
+        if (patient.PhoneNumber is not PhoneNumberNotSet)
         {
             _smsService.TellPatientToEatLessSugar(patient.PhoneNumber, labAnswer);
             return;
         }
             
-        if (patient.MailAddress is not null)
+        if (patient.MailAddress is not MailAddressNotSet)
         {
             _mailService.TellPatientToEatLessSugar(patient.MailAddress, labAnswer);
         }
