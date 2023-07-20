@@ -12,6 +12,11 @@ These are run configurations you can use for testing:
 * `LegacyPatient` a patient who hasn't provided their zodiac sign.
 * `LazyInitializedPatient` a patient added concurrently as the tool is run.
 
+If you are using Rider, it is as simple as clicking the play button in this README.md file after having built the
+solution. In Visual Studio, unfortunately, I have not figured out a simple way to run both the server and the
+console application simoultaneously in the IDE. You might need to run the server from a terminal.
+Alternatively, you may use two open instances of Visual Studio.
+
 While it's encouraged to run the tool and experiment with the various patient profiles,
 it's not strictly necessary to do so in order to follow the assignment.
 The main goal of this exercise is to gain a solid understanding of null issues
