@@ -620,7 +620,7 @@ public record MailAddress(string Value)
     public override string ToString() => Value;
 }
 ```
-[snippet source]()
+[snippet source](https://github.com/kimrs/AstroMedica/blob/5c7b956dfbfae750db7c7468f76f27b240a67cea/Transport/Patient/Patient.cs#L31-L49)
 
 By introducing classes such as PhoneNumberNotSet and MailAddressNotSet, we can effectively convey that the patient did not provide this information and that this is a common business case.
 
@@ -651,7 +651,7 @@ In line with this change, we also need to migrate our patient database:
         )
     }.ToDictionary(x => x.Id);
 ```
-[snippet source]()
+[snippet source](https://github.com/kimrs/AstroMedica/blob/5c7b956dfbfae750db7c7468f76f27b240a67cea/Backend/PatientController.cs#L11C12-L33)
 
 Finally, in our glucose analyzer, the check now looks as follows:
 
@@ -667,7 +667,7 @@ Finally, in our glucose analyzer, the check now looks as follows:
         _mailService.TellPatientToEatLessSugar(patient.MailAddress, labAnswer);
     }
 ```
-[snippet source]()
+[snippet source](https://github.com/kimrs/AstroMedica/blob/5c7b956dfbfae750db7c7468f76f27b240a67cea/LabAnswerAnalyser/GlucoseAnalyser.cs#L65C1-L74C10)
 
 This revised approach makes the code more explicit, more predictable, and less prone to bugs. It's also a
 useful pattern to consider in any scenario where null is being used to represent the absence of data.
