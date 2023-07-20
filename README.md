@@ -7,6 +7,7 @@ To run the server use the `Backend: https` run configuration.
 
 You can run the LabAnswerAnalyser with the patient ID as a command-line argument, provided the server is up and running.
 These are run configurations you can use for testing:
+
 0. `PhoneNumberPatient` a standard patient with a phone number but no email address.
 1. `CovidPatient` a covid patient who hasn't provided a phone number.
 2. `LegacyPatient` a patient who hasn't provided their zodiac sign.
@@ -128,6 +129,8 @@ zodiac sign. If the glucose reading is above this personalized threshold, the pa
 | Virgo       | 35                |
 | Libra       | 36                |
 
+We find the business logic for the glucose analyser in
+[`GlucoseAnalyzer.cs`](https://github.com/kimrs/AstroMedica/blob/2efde795e65a1511430eadcf07c4cb5ce4a42aca/LabAnswerAnalyser/GlucoseAnalyser.cs#L12).
 The initial step the device performs is fetching the patient's data from the server. After the data is retrieved,
 an immediate null check is performed. Should the patient data come up null, the system takes a pause, and then another
 attempt is made to retrieve the data. The in-line comments shed some light on the two circumstances that might lead to
@@ -209,7 +212,7 @@ public IPatient Read(int idValue)
 ```
 [snippet source](https://github.com/kimrs/AstroMedica/blob/416804cff0cb0908779eaef4c9070df2a67a6beb/Backend/PatientController.cs#L36-L49)
 
-With this discovery, we have now assigned four different implicit meanings to null throughout the system:
+With this discovery, we have identified four different implicit meanings assigned to null throughout the system:
 * The server is offline
 * Deserialization fails
 * Server is still initializing
@@ -365,6 +368,7 @@ Please note, the condition in the if clause only covers potential null returns a
 where null was returned due to an unreachable server or failed deserialization. I argue that these were bugs in the original system. If the server
 is off, it's unlikely to be back up within the next 10 seconds. Similarly, if deserialization failed once, it's not likely that waiting will resolve the issue.
 
+Use the command `git checkout step/1-implementing-ioption` to see these modifications in all their glory.
 
 # Eliminating Nullable Properties through Better Modeling
 Often, the presence of 'null' values in code can indicate a problem with the modeling. In particular, 
@@ -503,8 +507,9 @@ Also, as we are no longer setting the `GlucoseLevel` to null, the null-check is 
 [snippet source](https://github.com/kimrs/AstroMedica/blob/661aa6eee88d1789eed330dfb649eaac2e4c3f26/LabAnswerAnalyser/GlucoseAnalyser.cs#L53-L54)
 
 The `OfType` method is more appropriate here as it filters the collection based on the type, which is more idiomatic and efficient in this case compared to `Where`.
+Use the command `git checkout step/2-better-modeling` to see these modifications in all their glory.
 
-# Leveraging Interfaces for Variability
+# Leveraging Interfaces
 Sometimes, in software design, we encounter scenarios where different classes represent variations of the same conceptual entity.
 A slight difference in characteristics can lead to the presence of null values in some properties, indicating they are not relevant for
 certain variants. Failing to express this difference in our code often leads to these null values. We will explore an approach to address
@@ -588,6 +593,7 @@ new types of patients in the future without needing to modify existing code.
 
 To summarize, by leveraging interfaces, we were able to express variability in our `Patient` class, improving the clarity of our code and
 eliminating unnecessary null checks.
+Use the command `git checkout step/3-leveraging-interfaces` to see these modifications in all their glory.
 
 # Representing Optional Data Explicitly
 The use of null to signify optional or unprovided data by a user is common. However, this approach can lead to ambiguity and unnecessary
@@ -691,6 +697,8 @@ Finally, in our glucose analyzer, the check now looks as follows:
 This revised approach makes the code more explicit, more predictable, and less prone to bugs. It's also a
 useful pattern to consider in any scenario where null is being used to represent the absence of data.
 
+Use the command `git checkout step/4-optional-data` to see these modifications in all their glory.
+
 # Enabling Null-State Analysis and Addressing Warnings
 In this last section, we will activate the Null-state analysis feature that comes with the nullable reference type configuration.
 This static analysis tool keeps track of the null state of reference types and issues warnings when a null dereference could occur.
@@ -724,7 +732,7 @@ By handling the case where it returns null, we can eliminate this warning:
 [snippet source](https://github.com/kimrs/AstroMedica/blob/449ce279fa943408153c73a7c40719ec8396083b/LabAnswerAnalyser/PatientService.cs#L37-L41C8)
 
 With this update, we handle the potential null return of `DeserializeObject` method by returning a `None<IPatient>` with a `FailedToDeserialize`
-reason, thereby explicitly representing the lack of a patient result due to a failed deserialization.
+reason, thereby explicitly representing the lack of a patient result due to a failed deserialization. Use the command `git checkout step/5-enabling-null-state-analysis` to see the finished product in all its glory.
 
 # Summary
 We began with an application that assigned seven distinct interpretations to the null value, each corresponding to a different scenario:
@@ -747,3 +755,4 @@ By using five techniques, we successfully eliminated all implicit meanings assig
 * Enabling nullable reference types
 
 By applying these methods, we have transformed the application into a more maintainable, bug-resilient structure, thereby enhancing its long-term sustainability.
+
