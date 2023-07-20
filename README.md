@@ -7,15 +7,25 @@ To run the server use the `Backend: https` run configuration.
 
 You can run the LabAnswerAnalyser with the patient ID as a command-line argument, provided the server is up and running.
 These are run configurations you can use for testing:
-* `PhoneNumberPatient` a standard patient with a phone number but no email address.
-* `CovidPatient` a covid patient who hasn't provided a phone number.
-* `LegacyPatient` a patient who hasn't provided their zodiac sign.
-* `LazyInitializedPatient` a patient added concurrently as the tool is run.
+0. `PhoneNumberPatient` a standard patient with a phone number but no email address.
+1. `CovidPatient` a covid patient who hasn't provided a phone number.
+2. `LegacyPatient` a patient who hasn't provided their zodiac sign.
+3. `LazyInitializedPatient` a patient added concurrently as the tool is run.
 
-If you are using Rider, it is as simple as clicking the play button in this README.md file after having built the
+If you are using Rider, it is as simple as clicking any of the play buttons in this README.md file after having built the
 solution. In Visual Studio, unfortunately, I have not figured out a simple way to run both the server and the
-console application simoultaneously in the IDE. You might need to run the server from a terminal.
+console application simultaneously in the IDE. You might need to run the server from a terminal.
 Alternatively, you may use two open instances of Visual Studio.
+To run from terminal
+
+```shell
+AstroMedica> cd Backend
+AstroMedica\Backend> dotnet run
+
+AstroMedica> cd LabAnswerAnalyzer
+AstroMedica\LabAnswerAnalyzer> dotnet run 0
+```
+The argument provided to the LabAnswerAnalyzer is the id of the patient (0-3).
 
 While it's encouraged to run the tool and experiment with the various patient profiles,
 it's not strictly necessary to do so in order to follow the assignment.
@@ -37,7 +47,9 @@ The null reference became a source of numerous software bugs, crashes and vulner
 And now, the "null pointer exception" is one of the most infamous software bugs.
 Tony later apologized for this calling the invention his billion-dollar-mistake.
 However, he does not seem willing to pay us back. So it is time for us programmers to take responsibility.
+
 ### The Many Faces of Null
+
 ```csharp
 try
 {
