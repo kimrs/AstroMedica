@@ -30,6 +30,8 @@ public record LegacyPatient(
 
 public interface IPhoneNumber { }
 
+public record PhoneNumberNotSet : IPhoneNumber;
+
 public record PhoneNumber(string Value)
     : IPhoneNumber
 {
@@ -37,6 +39,8 @@ public record PhoneNumber(string Value)
 }
 
 public interface IMailAddress { }
+
+public record MailAddressNotSet : IMailAddress;
 
 public record MailAddress(string Value)
     : IMailAddress

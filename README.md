@@ -570,6 +570,104 @@ new types of patients in the future without needing to modify existing code.
 To summarize, by leveraging interfaces, we were able to express variability in our `Patient` class, improving the clarity of our code and
 eliminating unnecessary null checks.
 
+# Representing Optional Data Explicitly
+The use of null to signify optional or unprovided data by a user is common. However, this approach can lead to ambiguity and unnecessary
+null checks. The solution to this problem can be quite straightforward and simply involves representing this scenario with a distinct class.
 
+When examining the process of notifying the patient, we find that a patient is either notified through text or mail, based on whether they
+have provided us with a phone number. This decision is derived through a null-check, hence, implicitly stating that null signifies an unconfigured
+and optional property.
 
+```csharp
+    if (patient.PhoneNumber is not null)
+    {
+        _smsService.TellPatientToEatLessSugar(patient.PhoneNumber, labAnswer);
+        return;
+    }
+        
+    if (patient.MailAddress is not null)
+    {
+        _mailService.TellPatientToEatLessSugar(patient.MailAddress, labAnswer);
+    }
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/6b34199e3ee06fe768a107d5744ae7c8aa13c056/LabAnswerAnalyser/GlucoseAnalyser.cs#L70C32-L79)
 
+However, the reliance on null for this decision could lead to potential pitfalls. For instance, if due to an unexpected event, the
+PhoneNumber or MailAddress properties were set to null, it could lead to the patient not receiving a notification despite having provided
+us with a phone number. The clarity provided by explicit representation helps us distinguish between the different scenarios where a patient
+did not provide us with their contact information and when an unexpected event causes a property to be null.
+
+Here is how we can enhance this code by being more explicit.
+
+```csharp
+public interface IPhoneNumber { }
+
+public record PhoneNumberNotSet : IPhoneNumber;
+
+public record PhoneNumber(string Value)
+    : IPhoneNumber
+{
+    public override string ToString() => Value;
+}
+
+public interface IMailAddress { }
+
+public record MailAddressNotSet : IMailAddress;
+
+public record MailAddress(string Value)
+    : IMailAddress
+{
+    public override string ToString() => Value;
+}
+```
+[snippet source]()
+
+By introducing classes such as PhoneNumberNotSet and MailAddressNotSet, we can effectively convey that the patient did not provide this information and that this is a common business case.
+
+In line with this change, we also need to migrate our patient database:
+
+```csharp
+    private static readonly Dictionary<Id, IPatient> PatientDb = new List<IPatient>()
+    {
+        new Patient(
+            new Id(0),
+            new Name("Tony Hoare"),
+            ZodiacSign.Aries,
+            new PhoneNumber("815 493 00"),
+            MailAddress: new MailAddressNotSet()
+        ),
+        new Patient(
+            new Id(1),
+            new Name("Ada Lovelace"),
+            ZodiacSign.Gemini,
+            PhoneNumber: new PhoneNumberNotSet(),
+            MailAddress: new MailAddressNotSet()
+        ),
+        new LegacyPatient(
+            new Id(2),
+            new Name("Brian Kernighan"),
+            PhoneNumber: new PhoneNumberNotSet(),
+            new MailAddress("Portveien 2")
+        )
+    }.ToDictionary(x => x.Id);
+```
+[snippet source]()
+
+Finally, in our glucose analyzer, the check now looks as follows:
+
+```csharp
+    if (patient.PhoneNumber is not PhoneNumberNotSet)
+    {
+        _smsService.TellPatientToEatLessSugar(patient.PhoneNumber, labAnswer);
+        return;
+    }
+        
+    if (patient.MailAddress is not MailAddressNotSet)
+    {
+        _mailService.TellPatientToEatLessSugar(patient.MailAddress, labAnswer);
+    }
+```
+[snippet source]()
+
+This revised approach makes the code more explicit, more predictable, and less prone to bugs. It's also a
+useful pattern to consider in any scenario where null is being used to represent the absence of data.

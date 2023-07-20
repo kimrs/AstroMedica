@@ -15,19 +15,19 @@ public class PatientController
             new Name("Tony Hoare"),
             ZodiacSign.Aries,
             new PhoneNumber("815 493 00"),
-            MailAddress: null
+            MailAddress: new MailAddressNotSet()
         ),
         new Patient(
             new Id(1),
             new Name("Ada Lovelace"),
             ZodiacSign.Gemini,
-            PhoneNumber: null,
-            MailAddress: null
+            PhoneNumber: new PhoneNumberNotSet(),
+            MailAddress: new MailAddressNotSet()
         ),
         new LegacyPatient(
             new Id(2),
             new Name("Brian Kernighan"),
-            PhoneNumber: null,
+            PhoneNumber: new PhoneNumberNotSet(),
             new MailAddress("Portveien 2")
         )
     }.ToDictionary(x => x.Id);
