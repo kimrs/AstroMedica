@@ -51,7 +51,7 @@ if (patientId == 3)
             new Id(3),
             new Name("Grace Hopper"),
             ZodiacSign.Taurus,
-            PhoneNumber: null,
+            PhoneNumber: new PhoneNumberNotSet(),
             new MailAddress("Flåklypa")
         ));
 }

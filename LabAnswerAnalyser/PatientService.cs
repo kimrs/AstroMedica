@@ -36,7 +36,8 @@ public class PatientService : IPatientService
 
         try
         {
-            return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings);
+            return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings)
+                   ?? new None<IPatient>(new FailedToDeserialize());
         }
         catch (JsonReaderException)
         {

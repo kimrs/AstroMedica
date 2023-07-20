@@ -30,14 +30,15 @@ public class LabAnswerService : ILabAnswerService
         }
         catch (HttpRequestException )
         {
-            return null;
+            return new None<IEnumerable<ILabAnswer>>(new ServiceUnavailable());
         }
         
         var jsonResponse = await result.Content.ReadAsStringAsync();
 
         try
         {
-            return JsonConvert.DeserializeObject<IOption<IEnumerable<ILabAnswer>>>(jsonResponse, _settings);
+            return JsonConvert.DeserializeObject<IOption<IEnumerable<ILabAnswer>>>(jsonResponse, _settings)
+                   ?? new None<IEnumerable<ILabAnswer>>(new FailedToDeserialize());
         }
         catch (JsonReaderException)
         {

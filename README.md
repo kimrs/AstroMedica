@@ -671,3 +671,40 @@ Finally, in our glucose analyzer, the check now looks as follows:
 
 This revised approach makes the code more explicit, more predictable, and less prone to bugs. It's also a
 useful pattern to consider in any scenario where null is being used to represent the absence of data.
+
+# Enabling Null-State Analysis and Addressing Warnings
+In this last section, we will activate the Null-state analysis feature that comes with the nullable reference type configuration.
+This static analysis tool keeps track of the null state of reference types and issues warnings when a null dereference could occur.
+To enable this, we modify the project file by adding the `Nullable` element:
+
+```xml
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/449ce279fa943408153c73a7c40719ec8396083b/LabAnswerAnalyser/LabAnswerAnalyser.csproj#L3-L8)
+
+With this feature enabled, we start to see new warnings. One such warning appears in the `PatientService` when the service attempts
+to deserialize the server's response. The issue arises because the `DeserializeObject` method can return null if it's provided with null.
+By handling the case where it returns null, we can eliminate this warning:
+
+```csharp
+    try
+    {
+        return JsonConvert.DeserializeObject<IOption<IPatient>>(jsonResponse, _settings)
+               ?? new None<IPatient>(new FailedToDeserialize());
+    }
+    catch (JsonReaderException)
+    {
+        return new None<IPatient>(new FailedToDeserialize());
+    }
+```
+[snippet source](https://github.com/kimrs/AstroMedica/blob/449ce279fa943408153c73a7c40719ec8396083b/LabAnswerAnalyser/PatientService.cs#L37-L41C8)
+
+With this update, we handle the potential null return of `DeserializeObject` method by returning a `None<IPatient>` with a `FailedToDeserialize`
+reason, thereby explicitly representing the lack of a patient result due to a failed deserialization.
+
+# Summary
